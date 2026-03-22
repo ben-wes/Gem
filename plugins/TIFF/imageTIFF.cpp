@@ -58,7 +58,7 @@ static void imageTIFF_verbosehandler(const int verbosity,
   vsnprintf(buf, MAXPDSTRING, fmt, ap);
   buf[MAXPDSTRING-1]=0;
   result+=buf;
-  logpost(0, 3+verbosity, "%s", result.c_str());
+  fprintf(stderr, "%s\n", result.c_str());
 }
 static void imageTIFF_errorhandler(const char*module, const char*fmt,
                                    va_list ap)
@@ -165,8 +165,8 @@ bool imageTIFF :: load(std::string filename, imageStruct&result,
   if (knownFormat) {
     unsigned char *buf = new unsigned char [TIFFScanlineSize(tif)];
     if (buf == NULL) {
-      pd_error(0, "[GEM:imageTIFF] can't allocate memory for scanline buffer: %s",
-               filename.c_str());
+      fprintf(stderr, "[GEM:imageTIFF] can't allocate memory for scanline buffer: %s\n",
+              filename.c_str());
       TIFFClose(tif);
       tiffhandlers_cleanup();
       return false;
@@ -178,7 +178,7 @@ bool imageTIFF :: load(std::string filename, imageStruct&result,
     for (uint32_t row = 0; row < height; row++) {
       unsigned char *pixels = dstLine;
       if (TIFFReadScanline(tif, buf, row, 0) < 0) {
-        logpost(0, 3+1, "[GEM:imageTIFF] bad image data read on line: %d: %s", row,
+        fprintf(stderr, "[GEM:imageTIFF] bad image data read on line: %d: %s\n", row,
                 filename.c_str());
         TIFFClose(tif);
         return false;
@@ -216,7 +216,7 @@ bool imageTIFF :: load(std::string filename, imageStruct&result,
     char emsg[1024];
     TIFFRGBAImage img;
     if (TIFFRGBAImageBegin(&img, tif, 0, emsg) == 0) {
-      logpost(0, 3+0, "[GEM:imageTIFF] Error reading in image file '%s': %s",
+      fprintf(stderr, "[GEM:imageTIFF] Error reading in image file '%s': %s\n",
               filename.c_str(), emsg);
       TIFFClose(tif);
       tiffhandlers_cleanup();
@@ -226,15 +226,15 @@ bool imageTIFF :: load(std::string filename, imageStruct&result,
     uint32_t*raster = reinterpret_cast<uint32_t*>(_TIFFmalloc(npixels * sizeof(
                       uint32_t)));
     if (raster == NULL) {
-      pd_error(0, "[GEM:imageTIFF] Unable to allocate memory for image '%s'",
-               filename.c_str());
+      fprintf(stderr, "[GEM:imageTIFF] Unable to allocate memory for image '%s'\n",
+              filename.c_str());
       TIFFClose(tif);
       tiffhandlers_cleanup();
       return false;
     }
 
     if (TIFFRGBAImageGet(&img, raster, width, height) == 0) {
-      logpost(0, 3+0, "[GEM:imageTIFF] Error getting image data in file '%s': %s",
+      fprintf(stderr, "[GEM:imageTIFF] Error getting image data in file '%s': %s\n",
               filename.c_str(), emsg);
       _TIFFfree(raster);
       TIFFClose(tif);
@@ -327,7 +327,7 @@ bool imageTIFF :: load(std::string filename, imageStruct&result,
     orient = "unknown"; break;
   }
   if(orient) {
-    logpost(0, 3+0, "[GEM:imageTIFF] unhandled orientation '%s' (%d)", orient, orientation);
+    fprintf(stderr, "[GEM:imageTIFF] unhandled orientation '%s' (%d)\n", orient, orientation);
   }
   return true;
 }
@@ -405,7 +405,7 @@ bool imageTIFF::save(const imageStruct&constimage,
 
   for (uint32_t row = 0; row < height; row++) {
     if (TIFFWriteScanline(tif, srcLine, row, 0) < 0) {
-      logpost(0, 3+0, "[GEM:imageTIFF] could not write line %d to image '%s'", row,
+      fprintf(stderr, "[GEM:imageTIFF] could not write line %d to image '%s'\n", row,
               filename.c_str());
       TIFFClose(tif);
       tiffhandlers_cleanup();

@@ -147,7 +147,7 @@ void GemBase :: gem_startstopMess(int state)
     }
   }
 
-  gem_amRendering=(state!=0);
+  gem_amRendering=(state!=0) && (RENDERING==m_pimpl->state);
 
 
   // continue sending out the cache message
@@ -325,7 +325,9 @@ void GemBase :: obj_setupCallback(t_class *classPtr)
           obj->m_pimpl->state=obj->ENABLED;
         }
       }
-      obj->gem_amRendering=(!state);
+      if (!state) {
+        obj->gem_amRendering = false;
+      }
     }
     explicit _CallbackClass_gemContext (struct _class*c)
     {

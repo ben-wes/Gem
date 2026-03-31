@@ -178,8 +178,6 @@ void    pix_image:: loadCallback(void*data,
 /////////////////////////////////////////////////////////
 void pix_image :: render(GemState *state)
 {
-  gem::image::load::poll();
-
   // if we don't have an image, just return
   if (!m_loadedImage) {
     return;

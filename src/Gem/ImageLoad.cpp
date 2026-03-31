@@ -133,7 +133,7 @@ struct PixImageThreadLoader : public gem::thread::SynchedWorkerThread {
       }
 
       if(s_instance) {
-        s_instance->setPolling(true);
+        s_instance->setPolling(false);
       }
     }
 

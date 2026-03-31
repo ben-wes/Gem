@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////
 
 #include "VertexBuffer.h"
+#include "Base/GemContext.h"
 
 /* for post(), error(),... */
 #include <m_pd.h>
@@ -145,6 +146,7 @@ gem::VBO::VBO(GLenum type, unsigned char dimen)
   , m_dimen(dimen)
   , m_type(type)
   , m_valid(false)
+  , m_vboContext(-1)
 {
   if(!m_dimen) {
     switch(m_type) {
@@ -164,6 +166,9 @@ gem::VBO::VBO(GLenum type, unsigned char dimen)
 int gem::VBO::render(void) const
 {
   if(!m_valid || !m_vbo)
+    return 0;
+  int current_context_id = static_cast<int>(gem::Context::getContextId());
+  if(m_vboContext != current_context_id)
     return 0;
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
@@ -198,6 +203,12 @@ bool gem::VBO::update(size_t argc, const float* argv)
   if(!(glGenBuffers && glBindBuffer && glBufferData)) {
     return false;
   }
+
+  int current_context_id = static_cast<int>(gem::Context::getContextId());
+  if(m_vbo && m_vboContext != current_context_id) {
+    m_vbo = 0;
+    m_size = 0;
+  }
   if(!m_vbo) {
     glGenBuffers(1, &m_vbo);
     m_size = 0;
@@ -213,16 +224,21 @@ bool gem::VBO::update(size_t argc, const float* argv)
   } else {
     glBufferSubData(GL_ARRAY_BUFFER, 0, argc * m_dimen * sizeof(float), argv);
   }
+  m_vboContext = current_context_id;
   m_valid = true;
   return m_valid;
 }
 void gem::VBO::destroy(void)
 {
+  int current_context_id = static_cast<int>(gem::Context::getContextId());
   if(m_vbo) {
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glDeleteBuffers(1, &m_vbo);
+    if(m_vboContext == current_context_id) {
+      glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+      glDeleteBuffers(1, &m_vbo);
+    }
   }
   m_vbo = 0;
   m_size = 0;
   m_valid = false;
+  m_vboContext = -1;
 }

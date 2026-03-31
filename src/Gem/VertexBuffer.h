@@ -64,6 +64,7 @@ private:
   unsigned char m_dimen;
   GLenum m_type;
   bool m_valid;
+  int m_vboContext;
 public:
   VBO(GLenum type, unsigned char dimen=0);
 

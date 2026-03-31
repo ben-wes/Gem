@@ -14,6 +14,7 @@
 
 #include "model.h"
 #include <algorithm> // std::min
+#include "Base/GemContext.h"
 #include "m_pd.h"
 #include "plugins/modelloader.h"
 
@@ -249,6 +250,7 @@ namespace gem {
     enum modelGL::rescale rescale;
     float offset[3];
     float scale;
+    unsigned int lastUploadContext;
 
     PIMPL()
       : update(true)
@@ -259,6 +261,7 @@ namespace gem {
       , rescale(NORMALIZE_CENTER)
       , offset{0.0, 0.0, 0.0}
       , scale(1.0)
+      , lastUploadContext((unsigned int)-1)
       {
         ; }
 
@@ -338,6 +341,10 @@ namespace gem {
   }
 
   void modelGL::render(std::vector<unsigned int>&meshes) {
+    unsigned int current_context_id = gem::Context::getContextId();
+    if(m_pimpl->lastUploadContext != current_context_id) {
+      m_pimpl->update = true;
+    }
     if(m_pimpl->update) update();
 
     const unsigned int numMeshes = m_pimpl->mesh.size();
@@ -398,6 +405,7 @@ namespace gem {
       }
     }
     glPopMatrix();
+    m_pimpl->lastUploadContext = current_context_id;
   }
 
   void modelGL :: setDrawType(GLenum drawtype) {

@@ -116,6 +116,12 @@ bool gem::VertexBuffer:: render (void)
   if(!(glBufferData && glBindBuffer)) {
     return false;
   }
+  if(glIsBuffer && !glIsBuffer(vbo)) {
+    vbo = 0;
+  }
+  if(!vbo && !create()) {
+    return false;
+  }
   // render from the VBO
   //::post("VertexBuffer::render: %d?", enabled);
   if ( enabled ) {

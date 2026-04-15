@@ -129,7 +129,14 @@ bool GLStack::push(enum GemStackId id)
     } else
       glPushMatrix();
     data->stackDepth[id]++;
-    if(gem::utils::gl::glReportError(NULL, "push "))post("stack=%d", id);
+    if(GLenum err = gem::utils::gl::glReportError(false)) {
+      if(GL_INVALID_OPERATION == err) {
+        data->maxDepth[id] = 0;
+        data->stackDepth[id] = 0;
+        return false;
+      }
+      post("stack=%d", id);
+    }
     return true;
   }
 
@@ -170,7 +177,14 @@ bool GLStack::pop(enum GemStackId id)
       glActiveTexture(curUnit);
     } else
       glPopMatrix();
-    if(gem::utils::gl::glReportError(NULL, "pop "))post("stack=%d", id);
+    if(GLenum err = gem::utils::gl::glReportError(false)) {
+      if(GL_INVALID_OPERATION == err) {
+        data->maxDepth[id] = 0;
+        data->stackDepth[id] = 0;
+        return false;
+      }
+      post("stack=%d", id);
+    }
     return true;
   }
   return false;

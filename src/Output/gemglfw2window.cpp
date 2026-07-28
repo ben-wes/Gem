@@ -16,6 +16,7 @@
 
 #include "RTE/MessageCallbacks.h"
 #include "Gem/Exception.h"
+#include <cstdlib>
 
 #define DEBUG ::startpost("%s:%d [%s]:: ", __FILE__, __LINE__, __FUNCTION__), ::post
 
@@ -43,6 +44,8 @@ gemglfw2window :: gemglfw2window(void) :
     if(!glfwInit()) {
       throw(GemException("could not initialize GLFW infrastructure"));
     }
+    /* On macOS, glfwTerminate()+glfwInit() can crash; defer to atexit. */
+    std::atexit(glfwTerminate);
   }
   s_instances++;
 }
@@ -55,9 +58,6 @@ gemglfw2window :: ~gemglfw2window()
 {
   s_instances--;
   destroyMess();
-  if(s_instances==0) {
-    glfwTerminate();
-  }
 }
 
 

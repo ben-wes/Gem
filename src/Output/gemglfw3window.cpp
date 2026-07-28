@@ -19,12 +19,10 @@
 #include "Gem/Exception.h"
 #include <map>
 #include <cctype>
+#include <cstdlib>
 
 #define DEBUG ::startpost("%s:%d [%s]:: ", __FILE__, __LINE__, __FUNCTION__), ::post
 
-/* whether we have a window created or not
- * (when all windows have been closed, we terminate GLFW)
- */
 static unsigned int s_instances=0;
 
 static std::map<GLFWwindow *, gemglfw3window*>s_windowmap;
@@ -629,6 +627,8 @@ gemglfw3window :: gemglfw3window(t_symbol*s) :
     if(!glfwInit()) {
       throw(GemException("could not initialize GLFW infrastructure"));
     }
+    /* On macOS, glfwTerminate()+glfwInit() can crash; defer to atexit. */
+    std::atexit(glfwTerminate);
   }
   s_instances++;
 }
@@ -641,9 +641,6 @@ gemglfw3window :: ~gemglfw3window()
 {
   s_instances--;
   destroyMess();
-  if(s_instances==0) {
-    glfwTerminate();
-  }
 }
 
 

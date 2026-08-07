@@ -24,7 +24,7 @@
  * (GLFW<3 only allows a single window
  */
 static gemglfw2window* s_window = 0;
-static unsigned int s_instances=0;
+static bool s_initialized = false;
 
 CPPEXTERN_NEW(gemglfw2window);
 
@@ -40,14 +40,14 @@ gemglfw2window :: gemglfw2window(void) :
   m_profile_major(0), m_profile_minor(0),
   m_wheelpos(0)
 {
-  if(s_instances==0) {
+  if(!s_initialized) {
     if(!glfwInit()) {
       throw(GemException("could not initialize GLFW infrastructure"));
     }
     /* On macOS, glfwTerminate()+glfwInit() can crash; defer to atexit. */
     std::atexit(glfwTerminate);
+    s_initialized = true;
   }
-  s_instances++;
 }
 
 /////////////////////////////////////////////////////////
@@ -56,7 +56,6 @@ gemglfw2window :: gemglfw2window(void) :
 /////////////////////////////////////////////////////////
 gemglfw2window :: ~gemglfw2window()
 {
-  s_instances--;
   destroyMess();
 }
 

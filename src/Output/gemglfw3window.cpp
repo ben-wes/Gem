@@ -23,7 +23,7 @@
 
 #define DEBUG ::startpost("%s:%d [%s]:: ", __FILE__, __LINE__, __FUNCTION__), ::post
 
-static unsigned int s_instances=0;
+static bool s_initialized = false;
 
 static std::map<GLFWwindow *, gemglfw3window*>s_windowmap;
 
@@ -614,7 +614,7 @@ gemglfw3window :: gemglfw3window(t_symbol*s) :
   }
 
   m_width = m_height = 0;
-  if(s_instances==0) {
+  if(!s_initialized) {
 #if KERNEL_VERSION(GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION) >= KERNEL_VERSION(3,4,0)
     if (GLFW_ANY_PLATFORM == platform || glfwPlatformSupported(platform)) {
       glfwInitHint(GLFW_PLATFORM, platform);
@@ -629,8 +629,8 @@ gemglfw3window :: gemglfw3window(t_symbol*s) :
     }
     /* On macOS, glfwTerminate()+glfwInit() can crash; defer to atexit. */
     std::atexit(glfwTerminate);
+    s_initialized = true;
   }
-  s_instances++;
 }
 
 /////////////////////////////////////////////////////////
@@ -639,7 +639,6 @@ gemglfw3window :: gemglfw3window(t_symbol*s) :
 /////////////////////////////////////////////////////////
 gemglfw3window :: ~gemglfw3window()
 {
-  s_instances--;
   destroyMess();
 }
 
